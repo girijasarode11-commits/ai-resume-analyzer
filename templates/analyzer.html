@@ -1,0 +1,176 @@
+
+{% extends "base.html" %}
+
+{% block title %}Analyze Resume{% endblock %}
+
+{% block content %}
+
+<h1 class="text-4xl font-bold mb-3">
+    Resume Analyzer 📄
+</h1>
+
+<p class="text-gray-400 mb-8">
+    Upload your resume and compare it with a job description to get ATS score, similarity, and AI recommendations.
+</p>
+
+<div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 max-w-5xl">
+
+    <form id="analyzeForm"
+          action="/analyze"
+          method="POST"
+          enctype="multipart/form-data"
+          class="space-y-6">
+
+        <!-- Upload Box -->
+        <div>
+            <label class="block mb-3 text-lg font-semibold">
+                Upload Resume (PDF)
+            </label>
+
+            <label id="dropArea"
+                   class="block border-2 border-dashed border-cyan-400 rounded-2xl p-10 text-center cursor-pointer hover:bg-white/5 transition">
+
+                <input
+                    id="resumeInput"
+                    type="file"
+                    name="resume"
+                    accept=".pdf"
+                    required
+                    class="hidden"
+                >
+
+                <div class="text-5xl mb-4">📄</div>
+
+                <p class="text-lg font-semibold">
+                    Drag & Drop PDF Here
+                </p>
+
+                <p class="text-gray-400 mt-2">
+                    or click to browse
+                </p>
+
+                <p id="fileName" class="mt-4 text-cyan-400 font-semibold"></p>
+            </label>
+        </div>
+
+        <!-- Job Description -->
+        <div>
+            <label class="block mb-3 text-lg font-semibold">
+                Paste Job Description
+            </label>
+
+            <textarea
+                id="jobDesc"
+                name="job_desc"
+                rows="12"
+                required
+                placeholder="Paste job description here..."
+                class="w-full p-4 rounded-xl text-black"
+            ></textarea>
+        </div>
+
+        <!-- Sample JDs -->
+        <div>
+            <p class="mb-3 text-gray-300">Quick Sample JDs:</p>
+
+            <div class="flex gap-3 flex-wrap">
+                <button type="button"
+                        onclick="fillAIJD()"
+                        class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600">
+                    AI Engineer
+                </button>
+
+                <button type="button"
+                        onclick="fillSEJD()"
+                        class="px-4 py-2 rounded-lg bg-purple-500 hover:bg-purple-600">
+                    Software Engineer
+                </button>
+
+                <button type="button"
+                        onclick="fillDAJD()"
+                        class="px-4 py-2 rounded-lg bg-pink-500 hover:bg-pink-600">
+                    Data Analyst
+                </button>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <button
+            type="submit"
+            class="w-full py-4 rounded-xl text-white font-bold bg-gradient-to-r from-cyan-500 to-purple-600 hover:scale-[1.02] transition shadow-xl"
+        >
+            Analyze Resume
+        </button>
+
+    </form>
+</div>
+
+<script>
+const input = document.getElementById("resumeInput");
+const fileName = document.getElementById("fileName");
+const dropArea = document.getElementById("dropArea");
+
+input.addEventListener("change", function () {
+    if (input.files.length > 0) {
+        fileName.textContent = "Selected: " + input.files[0].name;
+    }
+});
+
+dropArea.addEventListener("dragover", function(e){
+    e.preventDefault();
+    dropArea.classList.add("bg-white/10");
+});
+
+dropArea.addEventListener("dragleave", function(){
+    dropArea.classList.remove("bg-white/10");
+});
+
+dropArea.addEventListener("drop", function(e){
+    e.preventDefault();
+    input.files = e.dataTransfer.files;
+    fileName.textContent = "Selected: " + input.files[0].name;
+    dropArea.classList.remove("bg-white/10");
+});
+
+document.getElementById("analyzeForm").addEventListener("submit", function(e){
+    if (!input.files.length) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: 'Resume Missing',
+            text: 'Please upload a PDF resume first.'
+        });
+        return;
+    }
+
+    if (!document.getElementById("jobDesc").value.trim()) {
+        e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: 'Job Description Missing',
+            text: 'Please paste job description.'
+        });
+        return;
+    }
+
+    showLoading();
+});
+
+function fillAIJD() {
+    document.querySelector("textarea").value =
+    "Looking for AI Engineer with Python, Machine Learning, Deep Learning, NLP, TensorFlow, SQL, Docker, AWS.";
+}
+
+function fillSEJD() {
+    document.querySelector("textarea").value =
+    "Looking for Software Engineer with Java, Python, DSA, SQL, OOP, Git, Docker, APIs.";
+}
+
+function fillDAJD() {
+    document.querySelector("textarea").value =
+    "Looking for Data Analyst with Python, SQL, Power BI, Tableau, Excel, Statistics, Machine Learning.";
+}
+</script>
+
+{% endblock %}
+

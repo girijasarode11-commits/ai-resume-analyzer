@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+
+<h1 class="text-4xl font-bold mb-3">Profile 👤</h1>
+<p class="text-gray-400 mb-8">Your account and performance statistics.</p>
+
+<div class="grid md:grid-cols-2 gap-6">
+
+    <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+        <p class="text-gray-400">Username</p>
+        <h2 class="text-3xl font-bold mt-2">{{ username }}</h2>
+    </div>
+
+    <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+        <p class="text-gray-400">Email</p>
+        <h2 class="text-xl font-bold mt-2 break-all">{{ email }}</h2>
+    </div>
+
+    <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+        <p class="text-gray-400">Total Uploads</p>
+        <h2 class="text-3xl font-bold mt-2">{{ total_uploads }}</h2>
+    </div>
+
+    <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+        <p class="text-gray-400">Average ATS</p>
+        <h2 class="text-3xl font-bold mt-2">{{ avg_ats }}%</h2>
+    </div>
+
+</div>
+
+<div class="mt-6 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-3xl p-8">
+    <p class="text-lg">Best ATS Score Achieved</p>
+    <h2 class="text-5xl font-bold mt-3">{{ best_ats }}%</h2>
+</div>
+
+{% endblock %}
+

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Rankings{% endblock %}
+
+{% block content %}
+
+<h1 class="text-4xl font-bold mb-3">Resume Rankings 🏆</h1>
+<p class="text-gray-400 mb-8">
+    Ranked based on ATS score and resume-job similarity.
+</p>
+
+{% if records %}
+<div class="space-y-5">
+
+    {% for row in records %}
+    <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 hover:border-cyan-400/30 transition">
+
+        <div class="flex justify-between items-center flex-wrap gap-4">
+
+            <!-- Left -->
+            <div class="flex items-center gap-5">
+
+                <!-- Rank Badge -->
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold
+                    {% if loop.index == 1 %}
+                        bg-yellow-500/20 text-yellow-300
+                    {% elif loop.index == 2 %}
+                        bg-gray-400/20 text-gray-200
+                    {% elif loop.index == 3 %}
+                        bg-orange-500/20 text-orange-300
+                    {% else %}
+                        bg-white/10 text-white
+                    {% endif %}
+                ">
+                    {% if loop.index == 1 %}
+                        🥇
+                    {% elif loop.index == 2 %}
+                        🥈
+                    {% elif loop.index == 3 %}
+                        🥉
+                    {% else %}
+                        #{{ loop.index }}
+                    {% endif %}
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold">{{ row[1] }}</h2>
+                    <p class="text-gray-400">Uploaded Resume</p>
+                </div>
+            </div>
+
+            <!-- Right -->
+            <div class="text-right min-w-[240px]">
+                <p class="text-xl font-bold mb-2">ATS: {{ row[2] }}%</p>
+
+                <div class="w-full bg-white/10 rounded-full h-3 mb-3">
+                    <div class="bg-gradient-to-r from-cyan-400 to-purple-500 h-3 rounded-full"
+                         style="width: {{ row[2] }}%">
+                    </div>
+                </div>
+
+                <p class="text-gray-300">Similarity: {{ row[3] }}%</p>
+
+                {% if row[2] >= 80 %}
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full bg-green-500/20 text-green-300">
+                        Excellent Match
+                    </span>
+                {% elif row[2] >= 50 %}
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-300">
+                        Moderate Match
+                    </span>
+                {% else %}
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full bg-red-500/20 text-red-300">
+                        Needs Improvement
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% else %}
+<div class="bg-white/10 rounded-3xl p-8 border border-white/20">
+    <p class="text-gray-400 text-lg">No resume analyses available yet.</p>
+</div>
+{% endif %}
+
+{% endblock %}

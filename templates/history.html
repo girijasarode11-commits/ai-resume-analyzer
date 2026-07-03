@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}History{% endblock %}
+
+{% block content %}
+
+<h1 class="text-4xl font-bold mb-3">Resume Analysis History 🕒</h1>
+<p class="text-gray-400 mb-8">
+    View, search, and filter previously analyzed resumes.
+</p>
+
+<!-- DASHBOARD FILTER BAR -->
+<div class="bg-white/10 border border-white/20 rounded-3xl p-6 mb-8 flex flex-wrap gap-4 items-center">
+
+    <!-- SEARCH -->
+    <input
+        type="text"
+        id="searchBox"
+        placeholder="Search resume filename..."
+        class="p-3 rounded-xl text-black flex-1 min-w-[200px]"
+        onkeyup="applyFilters()"
+    >
+
+    <!-- ATS FILTER -->
+    <select id="atsFilter" onchange="applyFilters()"
+        class="p-3 rounded-xl text-black">
+        <option value="all">All ATS Scores</option>
+        <option value="high">80% - 100% (Strong)</option>
+        <option value="mid">50% - 79% (Moderate)</option>
+        <option value="low">0% - 49% (Weak)</option>
+    </select>
+
+    <!-- SORT -->
+    <select id="sortFilter" onchange="applyFilters()"
+        class="p-3 rounded-xl text-black">
+        <option value="latest">Sort: Latest</option>
+        <option value="ats_high">ATS: High → Low</option>
+        <option value="ats_low">ATS: Low → High</option>
+    </select>
+
+</div>
+
+<!-- STATS -->
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+        <p class="text-gray-400">Total Analyses</p>
+        <h2 class="text-4xl font-bold mt-2">{{ records|length }}</h2>
+    </div>
+
+    <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+        <p class="text-gray-400">Best ATS Score</p>
+        <h2 class="text-4xl font-bold mt-2">
+            {% if records %}
+                {{ records|map(attribute=2)|max }}%
+            {% else %}
+                0%
+            {% endif %}
+        </h2>
+    </div>
+
+    <div class="bg-white/10 rounded-3xl p-6 border border-white/20">
+        <p class="text-gray-400">System Status</p>
+        <h2 class="text-2xl font-bold mt-3 text-cyan-400">
+            {% if records %}
+                Analysis Active
+            {% else %}
+                Waiting for Upload
+            {% endif %}
+        </h2>
+    </div>
+</div>
+
+<!-- HISTORY LIST -->
+<div id="historyContainer" class="space-y-5">
+
+{% if records %}
+    {% for row in records %}
+    <div class="history-card bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20"
+         data-name="{{ row[1]|lower }}"
+         data-ats="{{ row[2] }}">
+
+        <div class="flex justify-between items-center flex-wrap gap-4">
+
+            <div>
+                <p class="text-sm text-cyan-400 mb-2 font-bold">
+                    Rank #{{ loop.index }}
+                </p>
+
+                <h2 class="text-2xl font-bold">{{ row[1] }}</h2>
+                <p class="text-gray-400">Analyzed Resume</p>
+
+                <!-- SAFE TIMESTAMP -->
+                <p class="text-sm text-cyan-300 mt-2">
+                    Uploaded:
+                    {% if row|length > 6 %}
+                        {{ row[6] }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="text-right">
+                <p class="text-xl font-bold">ATS: {{ row[2] }}%</p>
+                <p class="text-gray-300">Similarity: {{ row[3] }}%</p>
+
+                {% if row[2] >= 80 %}
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full bg-green-500/20 text-green-300">
+                        Strong Match
+                    </span>
+                {% elif row[2] >= 50 %}
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-300">
+                        Moderate Match
+                    </span>
+                {% else %}
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full bg-red-500/20 text-red-300">
+                        Weak Match
+                    </span>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div class="mt-5">
+            <button
+                onclick="confirmDelete({{ row[0] }})"
+                class="px-5 py-2 rounded-xl bg-red-500 hover:bg-red-600 transition">
+                Delete
+            </button>
+        </div>
+
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="bg-white/10 rounded-3xl p-8 border border-white/20">
+        <p class="text-gray-400 text-lg">No analysis history found.</p>
+    </div>
+{% endif %}
+
+</div>
+
+<!-- JS FILTER ENGINE -->
+<script>
+function applyFilters() {
+
+    let searchInput = document.getElementById("searchBox").value.toLowerCase();
+    let atsFilter = document.getElementById("atsFilter").value;
+    let sortFilter = document.getElementById("sortFilter").value;
+
+    let container = document.getElementById("historyContainer");
+    let cards = Array.from(document.getElementsByClassName("history-card"));
+
+    // FILTER
+    cards.forEach(card => {
+
+        let name = card.getAttribute("data-name");
+        let ats = parseFloat(card.getAttribute("data-ats"));
+
+        let show = true;
+
+        if (!name.includes(searchInput)) show = false;
+
+        if (atsFilter === "high" && ats < 80) show = false;
+        if (atsFilter === "mid" && (ats < 50 || ats >= 80)) show = false;
+        if (atsFilter === "low" && ats >= 50) show = false;
+
+        card.style.display = show ? "" : "none";
+    });
+
+    // SORT
+    let sorted = cards.sort((a, b) => {
+
+        let aAts = parseFloat(a.getAttribute("data-ats"));
+        let bAts = parseFloat(b.getAttribute("data-ats"));
+
+        if (sortFilter === "ats_high") return bAts - aAts;
+        if (sortFilter === "ats_low") return aAts - bAts;
+
+        return 0; // latest default
+    });
+
+    sorted.forEach(card => container.appendChild(card));
+}
+
+function confirmDelete(id) {
+    Swal.fire({
+        title: 'Delete Analysis?',
+        text: "This record will be permanently deleted.",
+        icon: 'warning',
+        background: '#18181b',
+        color: '#ffffff',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#06b6d4',
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = "/delete-history/" + id;
+        }
+    });
+}
+</script>
+
+{% endblock %}
